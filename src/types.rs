@@ -1,4 +1,10 @@
+use crate::encode_decode::Decodable;
+
+use crate::error::Error;
 use serde::Serialize;
+
+#[derive(Debug)]
+pub struct RawTransaction(Vec<u8>);
 
 #[derive(Debug)]
 pub struct Transaction {
@@ -34,6 +40,18 @@ pub struct TxID(pub [u8; 32]);
 
 #[derive(Debug, Serialize)]
 pub struct CompactSize(pub u64);
+
+impl RawTransaction {
+    pub fn new(tx_hex: String) -> Result<RawTransaction, hex::FromHexError> {
+        hex::decode(tx_hex).map(|v| RawTransaction(v))
+    }
+}
+
+impl Transaction {
+    pub fn new(raw_tx: &RawTransaction) -> Result<Transaction, Error> {
+        Transaction::decode(&mut raw_tx.0.as_slice())
+    }
+}
 
 impl Amount {
     pub fn from_sat(satoshi: u64) -> Amount {
